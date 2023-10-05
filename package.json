@@ -1,0 +1,22 @@
+{
+    "name": "pvz-copy-tsc",
+    "version": "1.0.0",
+    "description": "",
+    "main": "main.js",
+    "private": true,
+    "scripts": {
+        "dev": "webpack --mode development --watch",
+        "build": "webpack --mode production",
+        "serve": "npx live-server"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "source-map-loader": "^4.0.1",
+        "ts-loader": "^9.4.4",
+        "typescript": "^5.2.2",
+        "webpack": "^5.88.2",
+        "webpack-cli": "^5.1.4"
+    }
+}
