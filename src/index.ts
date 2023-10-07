@@ -6,6 +6,7 @@ import Projectile from './classes/projectile'
 import Defender from './classes/defender'
 import Enemy from './classes/enemy'
 import Resource from './classes/resource'
+import FloatingMessage from './classes/floatingMessage'
 
 window.onload = function () {
     const canvas = document.getElementById('canvas') as HTMLCanvasElement
@@ -29,6 +30,7 @@ window.onload = function () {
     const enemyPositions: number[] = []
     const projectiles: Projectile[] = []
     const resources: Resource[] = []
+    const floatingMessages: FloatingMessage[] = []
 
     const mouse = new Mouse()
 
@@ -106,6 +108,8 @@ window.onload = function () {
         if (numberOfResources >= defenderCost) {
             defenders.push(new Defender(gridPositionX, gridPositionY))
             numberOfResources -= defenderCost
+        } else {
+            floatingMessages.push(new FloatingMessage('Not enough resources', mouse.x, mouse.y, 20, 'red'))
         }
     })
 
@@ -138,6 +142,20 @@ window.onload = function () {
         }
     }
 
+    function handleFloatingMessages() {
+        for (let i = 0; i < floatingMessages.length; i++) {
+            floatingMessages[i].update()
+            floatingMessages[i].draw(ctx)
+
+            if (floatingMessages[i].lifespan > 50) {
+                floatingMessages.splice(i, 1)
+                i--
+            }
+        }
+
+        console.log(floatingMessages)
+    }
+
     // Enemies
 
     function handleEnemies() {
@@ -150,6 +168,10 @@ window.onload = function () {
             }
             if (enemies[i].health <= 0) {
                 let gainedResources = enemies[i].maxHealth / 10
+                floatingMessages.push(
+                    new FloatingMessage('+' + gainedResources, enemies[i].x, enemies[i].y, 30, 'black'),
+                    new FloatingMessage('+' + gainedResources, cellSize, cellSize / 4, 30, 'black'),
+                )
                 numberOfResources += gainedResources
                 score += gainedResources
                 const findThisIndex = enemyPositions.indexOf(enemies[i].y)
@@ -178,6 +200,12 @@ window.onload = function () {
             // check collision between resource and mouse
             if (resources[i] && mouse.x && mouse.y && collisionDetection(resources[i], mouse)) {
                 numberOfResources += resources[i].amount
+                floatingMessages.push(
+                    new FloatingMessage('+' + resources[i].amount, resources[i].x, resources[i].y, 30, 'green'),
+                )
+                floatingMessages.push(
+                    new FloatingMessage('+' + resources[i].amount, cellSize, cellSize / 3, 20, 'green'),
+                )
                 resources.splice(i, 1)
                 i--
             }
@@ -216,6 +244,7 @@ window.onload = function () {
         handleEnemies()
         handleResources()
         handleGameStatus()
+        handleFloatingMessages()
 
         frame++
 

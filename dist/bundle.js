@@ -120,6 +120,44 @@ exports["default"] = Enemy;
 
 /***/ }),
 
+/***/ "./src/classes/floatingMessage.ts":
+/*!****************************************!*\
+  !*** ./src/classes/floatingMessage.ts ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+class FloatingMessage {
+    constructor(value, x, y, size, color) {
+        this.value = value;
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.color = color;
+        this.lifespan = 0;
+        this.opacity = 1;
+    }
+    update() {
+        this.y -= 0.3;
+        this.lifespan += 1;
+        if (this.opacity > 0.01) {
+            this.opacity -= 0.01;
+        }
+    }
+    draw(ctx) {
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = this.color;
+        ctx.font = `${this.size}px Creepster`;
+        ctx.fillText(this.value, this.x, this.y);
+        ctx.globalAlpha = 1;
+    }
+}
+exports["default"] = FloatingMessage;
+
+
+/***/ }),
+
 /***/ "./src/classes/mouse.ts":
 /*!******************************!*\
   !*** ./src/classes/mouse.ts ***!
@@ -240,6 +278,7 @@ const mouse_1 = __importDefault(__webpack_require__(/*! ./classes/mouse */ "./sr
 const defender_1 = __importDefault(__webpack_require__(/*! ./classes/defender */ "./src/classes/defender.ts"));
 const enemy_1 = __importDefault(__webpack_require__(/*! ./classes/enemy */ "./src/classes/enemy.ts"));
 const resource_1 = __importDefault(__webpack_require__(/*! ./classes/resource */ "./src/classes/resource.ts"));
+const floatingMessage_1 = __importDefault(__webpack_require__(/*! ./classes/floatingMessage */ "./src/classes/floatingMessage.ts"));
 window.onload = function () {
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
@@ -260,6 +299,7 @@ window.onload = function () {
     const enemyPositions = [];
     const projectiles = [];
     const resources = [];
+    const floatingMessages = [];
     const mouse = new mouse_1.default();
     let canvasPosition = canvas.getBoundingClientRect();
     canvas.addEventListener('mousemove', function (e) {
@@ -327,6 +367,9 @@ window.onload = function () {
             defenders.push(new defender_1.default(gridPositionX, gridPositionY));
             numberOfResources -= defenderCost;
         }
+        else {
+            floatingMessages.push(new floatingMessage_1.default('Not enough resources', mouse.x, mouse.y, 20, 'red'));
+        }
     });
     function handleDefenders() {
         for (let i = 0; i < defenders.length; i++) {
@@ -354,6 +397,17 @@ window.onload = function () {
             }
         }
     }
+    function handleFloatingMessages() {
+        for (let i = 0; i < floatingMessages.length; i++) {
+            floatingMessages[i].update();
+            floatingMessages[i].draw(ctx);
+            if (floatingMessages[i].lifespan > 50) {
+                floatingMessages.splice(i, 1);
+                i--;
+            }
+        }
+        console.log(floatingMessages);
+    }
     // Enemies
     function handleEnemies() {
         for (let i = 0; i < enemies.length; i++) {
@@ -365,6 +419,7 @@ window.onload = function () {
             }
             if (enemies[i].health <= 0) {
                 let gainedResources = enemies[i].maxHealth / 10;
+                floatingMessages.push(new floatingMessage_1.default('+' + gainedResources, enemies[i].x, enemies[i].y, 30, 'black'), new floatingMessage_1.default('+' + gainedResources, cellSize, cellSize / 4, 30, 'black'));
                 numberOfResources += gainedResources;
                 score += gainedResources;
                 const findThisIndex = enemyPositions.indexOf(enemies[i].y);
@@ -392,6 +447,8 @@ window.onload = function () {
             // check collision between resource and mouse
             if (resources[i] && mouse.x && mouse.y && (0, utils_1.collisionDetection)(resources[i], mouse)) {
                 numberOfResources += resources[i].amount;
+                floatingMessages.push(new floatingMessage_1.default('+' + resources[i].amount, resources[i].x, resources[i].y, 30, 'green'));
+                floatingMessages.push(new floatingMessage_1.default('+' + resources[i].amount, cellSize, cellSize / 3, 20, 'green'));
                 resources.splice(i, 1);
                 i--;
             }
@@ -426,6 +483,7 @@ window.onload = function () {
         handleEnemies();
         handleResources();
         handleGameStatus();
+        handleFloatingMessages();
         frame++;
         if (!gameOver)
             requestAnimationFrame(animate);
