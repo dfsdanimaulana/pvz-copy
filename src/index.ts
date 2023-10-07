@@ -1,5 +1,5 @@
 import { collisionDetection } from './utils'
-import { CELL_SIZE } from './constant'
+import { GAME_WIDTH, GAME_HEIGHT, CELL_SIZE } from './constant'
 import Cell from './classes/cell'
 import Mouse from './classes/mouse'
 import Projectile from './classes/projectile'
@@ -11,8 +11,8 @@ import FloatingMessage from './classes/floatingMessage'
 window.onload = function () {
     const canvas = document.getElementById('canvas') as HTMLCanvasElement
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-    canvas.width = 900
-    canvas.height = 600
+    canvas.width = GAME_WIDTH
+    canvas.height = GAME_HEIGHT
 
     // global variables
     let wave = 0

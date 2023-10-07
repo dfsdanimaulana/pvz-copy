@@ -261,8 +261,10 @@ exports["default"] = Resource;
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CELL_SIZE = void 0;
+exports.GAME_HEIGHT = exports.GAME_WIDTH = exports.CELL_SIZE = void 0;
 exports.CELL_SIZE = 100;
+exports.GAME_WIDTH = 900;
+exports.GAME_HEIGHT = 600;
 
 
 /***/ }),
@@ -289,8 +291,8 @@ const floatingMessage_1 = __importDefault(__webpack_require__(/*! ./classes/floa
 window.onload = function () {
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 900;
-    canvas.height = 600;
+    canvas.width = constant_1.GAME_WIDTH;
+    canvas.height = constant_1.GAME_HEIGHT;
     // global variables
     let wave = 0;
     let frame = 0;
