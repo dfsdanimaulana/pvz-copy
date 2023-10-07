@@ -196,6 +196,7 @@ window.onload = function () {
             resources.push(new Resource(canvas.width))
         }
         for (let i = 0; i < resources.length; i++) {
+            resources[i].update()
             resources[i].draw(ctx)
             // check collision between resource and mouse
             if (resources[i] && mouse.x && mouse.y && collisionDetection(resources[i], mouse)) {

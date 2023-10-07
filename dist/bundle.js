@@ -225,13 +225,20 @@ const utils_1 = __webpack_require__(/*! ../utils */ "./src/utils.ts");
 class Resource {
     constructor(canvasWidth) {
         this.canvasWidth = canvasWidth;
+        this.y = 0;
         this.color = 'yellow';
         this.width = constant_1.CELL_SIZE * 0.6;
         this.height = constant_1.CELL_SIZE * 0.6;
         this.amounts = [30, 40, 50];
         this.amount = (0, utils_1.getRandomValueFromArray)(this.amounts);
+        this.vy = Math.random() * 0.5 + 1;
+        this.maxLength = Math.floor(Math.random() * 5 + 1) * constant_1.CELL_SIZE + 25;
         this.x = Math.random() * (this.canvasWidth - constant_1.CELL_SIZE);
-        this.y = Math.floor(Math.random() * 5 + 1) * constant_1.CELL_SIZE + 25;
+    }
+    update() {
+        if (this.y < this.maxLength) {
+            this.y += this.vy;
+        }
     }
     draw(ctx) {
         ctx.fillStyle = this.color;
@@ -443,6 +450,7 @@ window.onload = function () {
             resources.push(new resource_1.default(canvas.width));
         }
         for (let i = 0; i < resources.length; i++) {
+            resources[i].update();
             resources[i].draw(ctx);
             // check collision between resource and mouse
             if (resources[i] && mouse.x && mouse.y && (0, utils_1.collisionDetection)(resources[i], mouse)) {
