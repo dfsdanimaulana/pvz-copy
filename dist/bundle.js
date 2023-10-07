@@ -102,6 +102,7 @@ class Enemy {
         this.health = 100;
         this.healthColor = 'gold';
         this.maxHealth = this.health;
+        this.damage = 0.2;
     }
     update() {
         this.x -= this.movement;
@@ -342,7 +343,7 @@ window.onload = function () {
             for (let j = 0; j < enemies.length; j++) {
                 if (defenders[i] && (0, utils_1.collisionDetection)(defenders[i], enemies[j])) {
                     enemies[j].movement = 0;
-                    defenders[i].health -= 0.2;
+                    defenders[i].health -= enemies[j].damage;
                 }
                 // remove defender when health is 0
                 if (defenders[i] && defenders[i].health <= 0) {

@@ -9,6 +9,7 @@ export default class Enemy {
     public health: number = 100
     readonly healthColor: string = 'gold'
     public maxHealth: number = this.health
+    public damage: number = 0.2
 
     constructor(public x: number, public y: number) {}
 

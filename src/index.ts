@@ -125,7 +125,7 @@ window.onload = function () {
             for (let j = 0; j < enemies.length; j++) {
                 if (defenders[i] && collisionDetection(defenders[i], enemies[j])) {
                     enemies[j].movement = 0
-                    defenders[i].health -= 0.2
+                    defenders[i].health -= enemies[j].damage
                 }
 
                 // remove defender when health is 0
