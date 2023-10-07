@@ -1,52 +1,39 @@
-import Game from './classes/game'
+import { collisionDetection } from './utils'
+import { CELL_SIZE } from './constant'
+import Cell from './classes/cell'
+import Mouse from './classes/mouse'
+import Projectile from './classes/projectile'
+import Defender from './classes/defender'
+import Enemy from './classes/enemy'
+import Resource from './classes/resource'
 
 window.onload = function () {
     const canvas = document.getElementById('canvas') as HTMLCanvasElement
-    if (!canvas) {
-        return
-    }
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-    if (!ctx) {
-        return
-    }
     canvas.width = 900
     canvas.height = 600
 
-    const game = new Game()
-
     // global variables
-    const cellSize = 100
+    let wave = 0
+    let frame = 0
+    let score = 0
+    let enemiesInterval = 600
+    let numberOfResources = 300
+    let gameOver = false
+
+    const cellSize = CELL_SIZE
+    const winningScore = 50
     const gameGrid: Cell[][] = []
     const defenders: Defender[] = []
     const enemies: Enemy[] = []
     const enemyPositions: number[] = []
     const projectiles: Projectile[] = []
     const resources: Resource[] = []
-    const winningScore = 50
-    let enemiesInterval = 600
-    let numberOfResources = 300
-    let gameOver = false
 
-    let wave = 0
-    let frame = 0
-    let score = 0
-
-    // mouse
-    type Mouse = {
-        x?: number
-        y?: number
-        width: number
-        height: number
-    }
-
-    const mouse: Mouse = {
-        x: undefined,
-        y: undefined,
-        width: 0.1,
-        height: 0.1,
-    }
+    const mouse = new Mouse()
 
     let canvasPosition = canvas.getBoundingClientRect()
+
     canvas.addEventListener('mousemove', function (e) {
         mouse.x = e.x - canvasPosition.left
         mouse.y = e.y - canvasPosition.top
@@ -60,27 +47,6 @@ window.onload = function () {
     const controlsBar = {
         width: canvas.width,
         height: cellSize,
-    }
-
-    class Cell {
-        x: number
-        y: number
-        width: number
-        height: number
-        color: string
-        constructor(x: number, y: number) {
-            this.x = x
-            this.y = y
-            this.width = cellSize
-            this.height = cellSize
-            this.color = 'black'
-        }
-        draw() {
-            if (mouse.x && mouse.y && collisionDetection(this, mouse)) {
-                this.color = 'red'
-                ctx.strokeRect(this.x, this.y, this.width, this.height)
-            }
-        }
     }
 
     function createGameGrid() {
@@ -97,44 +63,15 @@ window.onload = function () {
     function handleGameGrid() {
         for (let i = 0; i < canvas.width / cellSize; i++) {
             for (let j = 0; j < canvas.height / cellSize; j++) {
-                gameGrid[i][j].draw()
+                gameGrid[i][j].draw(ctx, mouse)
             }
-        }
-    }
-
-    // projectiles
-    class Projectile {
-        x: number
-        y: number
-        width: number
-        height: number
-        color: string
-        power: number
-        speed: number
-        constructor(x: number, y: number) {
-            this.x = x
-            this.y = y
-            this.width = 10
-            this.height = 10
-            this.color = 'black'
-            this.power = 20
-            this.speed = 5
-        }
-        update() {
-            this.x += this.speed
-        }
-        draw() {
-            ctx.fillStyle = this.color
-            ctx.beginPath()
-            ctx.arc(this.x, this.y, this.width, 0, Math.PI * 2)
-            ctx.fill()
         }
     }
 
     function handleProjectiles() {
         for (let i = 0; i < projectiles.length; i++) {
             projectiles[i].update()
-            projectiles[i].draw()
+            projectiles[i].draw(ctx)
 
             // handle collision with enemies
             for (let j = 0; j < enemies.length; j++) {
@@ -153,45 +90,7 @@ window.onload = function () {
     }
 
     // defenders
-    class Defender {
-        x: number
-        y: number
-        width: number
-        height: number
-        color: string
-        shooting: boolean
-        health: number
-        projectiles: Projectile[]
-        timer: number
-        constructor(x: number, y: number) {
-            this.x = x
-            this.y = y
-            this.width = cellSize
-            this.height = cellSize
-            this.color = 'blue'
-            this.shooting = false
-            this.health = 100
-            this.projectiles = []
-            this.timer = 0
-        }
-        update() {
-            if (this.shooting) {
-                this.timer++
-                if (this.timer % 100 === 0) {
-                    projectiles.push(new Projectile(this.x + this.width, this.y + this.height / 2))
-                }
-            } else {
-                this.timer = 0
-            }
-        }
-        draw() {
-            ctx.fillStyle = this.color
-            ctx.fillRect(this.x, this.y, this.width, this.height)
-            ctx.fillStyle = 'gold'
-            ctx.font = '20px Creepster'
-            ctx.fillText(Math.floor(this.health).toString(), this.x, this.y + 20)
-        }
-    }
+
     canvas.addEventListener('click', function () {
         if (!mouse.x || !mouse.y) return
         const gridPositionX = mouse.x - (mouse.x % cellSize)
@@ -212,8 +111,8 @@ window.onload = function () {
 
     function handleDefenders() {
         for (let i = 0; i < defenders.length; i++) {
-            defenders[i].draw()
-            defenders[i].update()
+            defenders[i].draw(ctx)
+            defenders[i].update(projectiles)
 
             // set shooting to true when enemies are in same y position
             if (enemyPositions.indexOf(defenders[i].y) !== -1) {
@@ -240,42 +139,10 @@ window.onload = function () {
     }
 
     // Enemies
-    class Enemy {
-        x: number
-        y: number
-        width: number
-        height: number
-        color: string
-        speed: number
-        movement: number
-        health: number
-        maxHealth: number
-        constructor(verticalPosition: number) {
-            this.x = canvas.width
-            this.y = verticalPosition
-            this.width = cellSize
-            this.height = cellSize
-            this.color = 'red'
-            this.speed = Math.random() * 0.2 + 0.4
-            this.movement = this.speed
-            this.health = 100
-            this.maxHealth = this.health
-        }
-        update() {
-            this.x -= this.movement
-        }
-        draw() {
-            ctx.fillStyle = this.color
-            ctx.fillRect(this.x, this.y, this.width, this.height)
-            ctx.fillStyle = 'gold'
-            ctx.font = '20px Creepster'
-            ctx.fillText(Math.floor(this.health).toString(), this.x, this.y + 20)
-        }
-    }
 
     function handleEnemies() {
         for (let i = 0; i < enemies.length; i++) {
-            enemies[i].draw()
+            enemies[i].draw(ctx)
             enemies[i].update()
             // handle game over
             if (enemies[i].x < 0) {
@@ -293,7 +160,7 @@ window.onload = function () {
         }
         if (frame % enemiesInterval === 0 && score < winningScore) {
             let verticalPosition = Math.floor(Math.random() * 5 + 1) * cellSize
-            enemies.push(new Enemy(verticalPosition))
+            enemies.push(new Enemy(canvas.width, verticalPosition))
             enemyPositions.push(verticalPosition)
             if (enemiesInterval > 120) {
                 enemiesInterval -= 100
@@ -302,38 +169,12 @@ window.onload = function () {
     }
 
     // resources
-    const amounts = [20, 30, 40]
-    class Resource {
-        x: number
-        y: number
-        color: string
-        width: number
-        height: number
-        amount: number
-
-        constructor() {
-            this.x = Math.random() * (canvas.width - cellSize)
-            this.y = Math.floor(Math.random() * 5 + 1) * cellSize + 25
-            this.color = 'yellow'
-            this.width = cellSize * 0.6
-            this.height = cellSize * 0.6
-            this.amount = amounts[Math.floor(Math.random() * amounts.length)]
-        }
-        draw() {
-            ctx.fillStyle = this.color
-            ctx.fillRect(this.x, this.y, this.width, this.height)
-            ctx.fillStyle = 'black'
-            ctx.font = '20px Creepster'
-            ctx.fillText(this.amount.toString(), this.x + 15, this.y + 25)
-        }
-    }
-
     function handleResources() {
         if (frame % 500 === 0 && score < winningScore) {
-            resources.push(new Resource())
+            resources.push(new Resource(canvas.width))
         }
         for (let i = 0; i < resources.length; i++) {
-            resources[i].draw()
+            resources[i].draw(ctx)
             // check collision between resource and mouse
             if (resources[i] && mouse.x && mouse.y && collisionDetection(resources[i], mouse)) {
                 numberOfResources += resources[i].amount
@@ -342,6 +183,7 @@ window.onload = function () {
             }
         }
     }
+
     // utilities
     function handleGameStatus() {
         ctx.fillStyle = 'gold'
@@ -381,16 +223,6 @@ window.onload = function () {
     }
 
     animate()
-
-    // collision detection
-    function collisionDetection(first: any, second: any): boolean {
-        return (
-            first.x < second.x + second.width &&
-            first.x + first.width > second.x &&
-            first.y < second.y + second.height &&
-            first.y + first.height > second.y
-        )
-    }
 
     // add listener for screen resize
     window.addEventListener('resize', function () {

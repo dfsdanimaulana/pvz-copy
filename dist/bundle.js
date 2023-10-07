@@ -2,20 +2,221 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./src/classes/game.ts":
+/***/ "./src/classes/cell.ts":
 /*!*****************************!*\
-  !*** ./src/classes/game.ts ***!
+  !*** ./src/classes/cell.ts ***!
   \*****************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const constant_1 = __webpack_require__(/*! ../constant */ "./src/constant.ts");
+const utils_1 = __webpack_require__(/*! ../utils */ "./src/utils.ts");
+class Cell {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = constant_1.CELL_SIZE;
+        this.height = constant_1.CELL_SIZE;
+        this.color = 'black';
+    }
+    draw(ctx, mouse) {
+        if (mouse.x && mouse.y && (0, utils_1.collisionDetection)(this, mouse)) {
+            this.color = 'red';
+            ctx.strokeRect(this.x, this.y, this.width, this.height);
+        }
+    }
+}
+exports["default"] = Cell;
+
+
+/***/ }),
+
+/***/ "./src/classes/defender.ts":
+/*!*********************************!*\
+  !*** ./src/classes/defender.ts ***!
+  \*********************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const constant_1 = __webpack_require__(/*! ../constant */ "./src/constant.ts");
+const projectile_1 = __importDefault(__webpack_require__(/*! ./projectile */ "./src/classes/projectile.ts"));
+class Defender {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = constant_1.CELL_SIZE;
+        this.height = constant_1.CELL_SIZE;
+        this.timer = 0;
+        this.health = 100;
+        this.color = 'blue';
+        this.healthColor = 'gold';
+        this.shooting = false;
+    }
+    update(projectiles) {
+        if (this.shooting) {
+            this.timer++;
+            if (this.timer % 100 === 0) {
+                projectiles.push(new projectile_1.default(this.x + this.width, this.y + this.height / 2));
+            }
+        }
+        else {
+            this.timer = 0;
+        }
+    }
+    draw(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillStyle = this.healthColor;
+        ctx.font = '20px Creepster';
+        ctx.fillText(Math.floor(this.health).toString(), this.x, this.y + 20);
+    }
+}
+exports["default"] = Defender;
+
+
+/***/ }),
+
+/***/ "./src/classes/enemy.ts":
+/*!******************************!*\
+  !*** ./src/classes/enemy.ts ***!
+  \******************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const constant_1 = __webpack_require__(/*! ../constant */ "./src/constant.ts");
+class Enemy {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = constant_1.CELL_SIZE;
+        this.height = constant_1.CELL_SIZE;
+        this.speed = Math.random() * 0.2 + 0.4;
+        this.movement = this.speed;
+        this.color = 'red';
+        this.health = 100;
+        this.healthColor = 'gold';
+        this.maxHealth = this.health;
+    }
+    update() {
+        this.x -= this.movement;
+    }
+    draw(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillStyle = this.healthColor;
+        ctx.font = '20px Creepster';
+        ctx.fillText(Math.floor(this.health).toString(), this.x, this.y + 20);
+    }
+}
+exports["default"] = Enemy;
+
+
+/***/ }),
+
+/***/ "./src/classes/mouse.ts":
+/*!******************************!*\
+  !*** ./src/classes/mouse.ts ***!
+  \******************************/
 /***/ ((__unused_webpack_module, exports) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-class Game {
+class Mouse {
     constructor() {
-        console.log('From class Game');
+        this.x = undefined;
+        this.y = undefined;
+        this.width = 0.1;
+        this.height = 0.1;
     }
 }
-exports["default"] = Game;
+exports["default"] = Mouse;
+
+
+/***/ }),
+
+/***/ "./src/classes/projectile.ts":
+/*!***********************************!*\
+  !*** ./src/classes/projectile.ts ***!
+  \***********************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+class Projectile {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 10;
+        this.height = 10;
+        this.power = 20;
+        this.speed = 5;
+        this.color = 'green';
+    }
+    update() {
+        this.x += this.speed;
+    }
+    draw(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.width, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+exports["default"] = Projectile;
+
+
+/***/ }),
+
+/***/ "./src/classes/resource.ts":
+/*!*********************************!*\
+  !*** ./src/classes/resource.ts ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const constant_1 = __webpack_require__(/*! ../constant */ "./src/constant.ts");
+const utils_1 = __webpack_require__(/*! ../utils */ "./src/utils.ts");
+class Resource {
+    constructor(canvasWidth) {
+        this.canvasWidth = canvasWidth;
+        this.color = 'yellow';
+        this.width = constant_1.CELL_SIZE * 0.6;
+        this.height = constant_1.CELL_SIZE * 0.6;
+        this.amounts = [30, 40, 50];
+        this.amount = (0, utils_1.getRandomValueFromArray)(this.amounts);
+        this.x = Math.random() * (this.canvasWidth - constant_1.CELL_SIZE);
+        this.y = Math.floor(Math.random() * 5 + 1) * constant_1.CELL_SIZE + 25;
+    }
+    draw(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillStyle = 'black';
+        ctx.font = '20px Creepster';
+        ctx.fillText(this.amount.toString(), this.x + 15, this.y + 25);
+    }
+}
+exports["default"] = Resource;
+
+
+/***/ }),
+
+/***/ "./src/constant.ts":
+/*!*************************!*\
+  !*** ./src/constant.ts ***!
+  \*************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CELL_SIZE = void 0;
+exports.CELL_SIZE = 100;
 
 
 /***/ }),
@@ -31,40 +232,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const game_1 = __importDefault(__webpack_require__(/*! ./classes/game */ "./src/classes/game.ts"));
+const utils_1 = __webpack_require__(/*! ./utils */ "./src/utils.ts");
+const constant_1 = __webpack_require__(/*! ./constant */ "./src/constant.ts");
+const cell_1 = __importDefault(__webpack_require__(/*! ./classes/cell */ "./src/classes/cell.ts"));
+const mouse_1 = __importDefault(__webpack_require__(/*! ./classes/mouse */ "./src/classes/mouse.ts"));
+const defender_1 = __importDefault(__webpack_require__(/*! ./classes/defender */ "./src/classes/defender.ts"));
+const enemy_1 = __importDefault(__webpack_require__(/*! ./classes/enemy */ "./src/classes/enemy.ts"));
+const resource_1 = __importDefault(__webpack_require__(/*! ./classes/resource */ "./src/classes/resource.ts"));
 window.onload = function () {
     const canvas = document.getElementById('canvas');
-    if (!canvas) {
-        return;
-    }
     const ctx = canvas.getContext('2d');
-    if (!ctx) {
-        return;
-    }
     canvas.width = 900;
     canvas.height = 600;
-    const game = new game_1.default();
     // global variables
-    const cellSize = 100;
+    let wave = 0;
+    let frame = 0;
+    let score = 0;
+    let enemiesInterval = 600;
+    let numberOfResources = 300;
+    let gameOver = false;
+    const cellSize = constant_1.CELL_SIZE;
+    const winningScore = 50;
     const gameGrid = [];
     const defenders = [];
     const enemies = [];
     const enemyPositions = [];
     const projectiles = [];
     const resources = [];
-    const winningScore = 50;
-    let enemiesInterval = 600;
-    let numberOfResources = 300;
-    let gameOver = false;
-    let wave = 0;
-    let frame = 0;
-    let score = 0;
-    const mouse = {
-        x: undefined,
-        y: undefined,
-        width: 0.1,
-        height: 0.1,
-    };
+    const mouse = new mouse_1.default();
     let canvasPosition = canvas.getBoundingClientRect();
     canvas.addEventListener('mousemove', function (e) {
         mouse.x = e.x - canvasPosition.left;
@@ -79,26 +274,11 @@ window.onload = function () {
         width: canvas.width,
         height: cellSize,
     };
-    class Cell {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-            this.width = cellSize;
-            this.height = cellSize;
-            this.color = 'black';
-        }
-        draw() {
-            if (mouse.x && mouse.y && collisionDetection(this, mouse)) {
-                this.color = 'red';
-                ctx.strokeRect(this.x, this.y, this.width, this.height);
-            }
-        }
-    }
     function createGameGrid() {
         for (let i = 0; i < canvas.width / cellSize; i++) {
             gameGrid.push([]);
             for (let j = 0; j < canvas.height / cellSize; j++) {
-                gameGrid[i].push(new Cell(i * cellSize, j * cellSize));
+                gameGrid[i].push(new cell_1.default(i * cellSize, j * cellSize));
             }
         }
     }
@@ -106,38 +286,17 @@ window.onload = function () {
     function handleGameGrid() {
         for (let i = 0; i < canvas.width / cellSize; i++) {
             for (let j = 0; j < canvas.height / cellSize; j++) {
-                gameGrid[i][j].draw();
+                gameGrid[i][j].draw(ctx, mouse);
             }
-        }
-    }
-    // projectiles
-    class Projectile {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-            this.width = 10;
-            this.height = 10;
-            this.color = 'black';
-            this.power = 20;
-            this.speed = 5;
-        }
-        update() {
-            this.x += this.speed;
-        }
-        draw() {
-            ctx.fillStyle = this.color;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.width, 0, Math.PI * 2);
-            ctx.fill();
         }
     }
     function handleProjectiles() {
         for (let i = 0; i < projectiles.length; i++) {
             projectiles[i].update();
-            projectiles[i].draw();
+            projectiles[i].draw(ctx);
             // handle collision with enemies
             for (let j = 0; j < enemies.length; j++) {
-                if (projectiles[i] && enemies[j] && collisionDetection(projectiles[i], enemies[j])) {
+                if (projectiles[i] && enemies[j] && (0, utils_1.collisionDetection)(projectiles[i], enemies[j])) {
                     enemies[j].health -= projectiles[i].power;
                     projectiles.splice(i, 1);
                     i--;
@@ -150,37 +309,6 @@ window.onload = function () {
         }
     }
     // defenders
-    class Defender {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-            this.width = cellSize;
-            this.height = cellSize;
-            this.color = 'blue';
-            this.shooting = false;
-            this.health = 100;
-            this.projectiles = [];
-            this.timer = 0;
-        }
-        update() {
-            if (this.shooting) {
-                this.timer++;
-                if (this.timer % 100 === 0) {
-                    projectiles.push(new Projectile(this.x + this.width, this.y + this.height / 2));
-                }
-            }
-            else {
-                this.timer = 0;
-            }
-        }
-        draw() {
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-            ctx.fillStyle = 'gold';
-            ctx.font = '20px Creepster';
-            ctx.fillText(Math.floor(this.health).toString(), this.x, this.y + 20);
-        }
-    }
     canvas.addEventListener('click', function () {
         if (!mouse.x || !mouse.y)
             return;
@@ -195,14 +323,14 @@ window.onload = function () {
         }
         let defenderCost = 100;
         if (numberOfResources >= defenderCost) {
-            defenders.push(new Defender(gridPositionX, gridPositionY));
+            defenders.push(new defender_1.default(gridPositionX, gridPositionY));
             numberOfResources -= defenderCost;
         }
     });
     function handleDefenders() {
         for (let i = 0; i < defenders.length; i++) {
-            defenders[i].draw();
-            defenders[i].update();
+            defenders[i].draw(ctx);
+            defenders[i].update(projectiles);
             // set shooting to true when enemies are in same y position
             if (enemyPositions.indexOf(defenders[i].y) !== -1) {
                 defenders[i].shooting = true;
@@ -212,7 +340,7 @@ window.onload = function () {
             }
             // check collision with enemies
             for (let j = 0; j < enemies.length; j++) {
-                if (defenders[i] && collisionDetection(defenders[i], enemies[j])) {
+                if (defenders[i] && (0, utils_1.collisionDetection)(defenders[i], enemies[j])) {
                     enemies[j].movement = 0;
                     defenders[i].health -= 0.2;
                 }
@@ -226,32 +354,9 @@ window.onload = function () {
         }
     }
     // Enemies
-    class Enemy {
-        constructor(verticalPosition) {
-            this.x = canvas.width;
-            this.y = verticalPosition;
-            this.width = cellSize;
-            this.height = cellSize;
-            this.color = 'red';
-            this.speed = Math.random() * 0.2 + 0.4;
-            this.movement = this.speed;
-            this.health = 100;
-            this.maxHealth = this.health;
-        }
-        update() {
-            this.x -= this.movement;
-        }
-        draw() {
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-            ctx.fillStyle = 'gold';
-            ctx.font = '20px Creepster';
-            ctx.fillText(Math.floor(this.health).toString(), this.x, this.y + 20);
-        }
-    }
     function handleEnemies() {
         for (let i = 0; i < enemies.length; i++) {
-            enemies[i].draw();
+            enemies[i].draw(ctx);
             enemies[i].update();
             // handle game over
             if (enemies[i].x < 0) {
@@ -269,7 +374,7 @@ window.onload = function () {
         }
         if (frame % enemiesInterval === 0 && score < winningScore) {
             let verticalPosition = Math.floor(Math.random() * 5 + 1) * cellSize;
-            enemies.push(new Enemy(verticalPosition));
+            enemies.push(new enemy_1.default(canvas.width, verticalPosition));
             enemyPositions.push(verticalPosition);
             if (enemiesInterval > 120) {
                 enemiesInterval -= 100;
@@ -277,32 +382,14 @@ window.onload = function () {
         }
     }
     // resources
-    const amounts = [20, 30, 40];
-    class Resource {
-        constructor() {
-            this.x = Math.random() * (canvas.width - cellSize);
-            this.y = Math.floor(Math.random() * 5 + 1) * cellSize + 25;
-            this.color = 'yellow';
-            this.width = cellSize * 0.6;
-            this.height = cellSize * 0.6;
-            this.amount = amounts[Math.floor(Math.random() * amounts.length)];
-        }
-        draw() {
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-            ctx.fillStyle = 'black';
-            ctx.font = '20px Creepster';
-            ctx.fillText(this.amount.toString(), this.x + 15, this.y + 25);
-        }
-    }
     function handleResources() {
         if (frame % 500 === 0 && score < winningScore) {
-            resources.push(new Resource());
+            resources.push(new resource_1.default(canvas.width));
         }
         for (let i = 0; i < resources.length; i++) {
-            resources[i].draw();
+            resources[i].draw(ctx);
             // check collision between resource and mouse
-            if (resources[i] && mouse.x && mouse.y && collisionDetection(resources[i], mouse)) {
+            if (resources[i] && mouse.x && mouse.y && (0, utils_1.collisionDetection)(resources[i], mouse)) {
                 numberOfResources += resources[i].amount;
                 resources.splice(i, 1);
                 i--;
@@ -343,18 +430,43 @@ window.onload = function () {
             requestAnimationFrame(animate);
     }
     animate();
-    // collision detection
-    function collisionDetection(first, second) {
-        return (first.x < second.x + second.width &&
-            first.x + first.width > second.x &&
-            first.y < second.y + second.height &&
-            first.y + first.height > second.y);
-    }
     // add listener for screen resize
     window.addEventListener('resize', function () {
         canvasPosition = canvas.getBoundingClientRect();
     });
 };
+
+
+/***/ }),
+
+/***/ "./src/utils.ts":
+/*!**********************!*\
+  !*** ./src/utils.ts ***!
+  \**********************/
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getRandomValueFromArray = exports.collisionDetection = void 0;
+// collision detection
+function collisionDetection(first, second) {
+    return (first.x < second.x + second.width &&
+        first.x + first.width > second.x &&
+        first.y < second.y + second.height &&
+        first.y + first.height > second.y);
+}
+exports.collisionDetection = collisionDetection;
+function getRandomValueFromArray(arr) {
+    if (!Array.isArray(arr)) {
+        throw new Error('Parameter must be an array');
+    }
+    if (arr.length === 0) {
+        throw new Error('Array must not be empty');
+    }
+    const randomIndex = Math.floor(Math.random() * arr.length);
+    return arr[randomIndex];
+}
+exports.getRandomValueFromArray = getRandomValueFromArray;
 
 
 /***/ })
